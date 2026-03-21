@@ -1,37 +1,62 @@
-// import React from "react";
 import "./styles.css";
-import {useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {Button} from "@mui/material";
 import React from "react";
+import {useOnlineStatus} from "./util/check-online-status.util.ts";
+import {getJoke} from "./api/get-random-joke.api.ts";
+import type {JokeApiResponse} from "./interface/joke-api-response.interface.ts";
 
-export const apiUrl = "https://api.chucknorris.io/jokes/random"
 
 export default function App() {
-    const [joke, setJoke] = useState({
-        value: undefined
-    })
-    const [jokesDisplay, toggleJokesDisplay] = useState(false)
+    const [joke, setJoke] = useState<JokeApiResponse | null>(null)
+    const [isJokeIntervalRunning, setIsJokeIntervalRunning] = useState(false);
 
-    const setIntervalHandler = () => {
-        setInterval(() => {
-            console.log("dddddd")
-            toggleJokesDisplay(!jokesDisplay)
-        }, 3000)
-    }
-    const getJoke = () => {
-        fetch(apiUrl)
-            .then(r => r.json())
-            .then(data => {
-                setJoke(data);
-            });
+    useEffect(() => {
+        if (!isJokeIntervalRunning) return;
+
+        void fetchAndSetJoke();
+
+        const id = setInterval(fetchAndSetJoke, 3000);
+
+        return () => clearInterval(id);
+    }, [isJokeIntervalRunning]);
+
+    const isOnline = useOnlineStatus()
+
+    let jokeSectionContent;
+
+    const handleJokeIntervalDisplayClick = () => {
+        setIsJokeIntervalRunning(prev => !prev);
     };
+
+    const fetchAndSetJoke = async () => {
+        try {
+            const data = await getJoke();
+            setJoke(data);
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
+    const handleGetRandomJokeClick = async () => {
+        await fetchAndSetJoke()
+    }
+
+    if (!isOnline) {
+        jokeSectionContent = <p>No connection</p>;
+    } else if (!joke) {
+        jokeSectionContent = <p>No joke yet...</p>;
+    } else {
+        jokeSectionContent = <p>{joke.value}</p>;
+    }
+
     return (
         <div className="App">
-            <h1>&lt;DAT /&gt;</h1>
-            <h2>-----------</h2>
-            <Button variant="contained" onClick={getJoke} color="primary">Show a joke...</Button>
-            <Button variant="contained" onClick={setIntervalHandler} color="primary">Show a joke...</Button>
-            {joke.value && <p>{joke.value}</p>}
+            <Button variant="contained" onClick={handleGetRandomJokeClick} color="primary">Show a joke...</Button>
+            <Button variant="contained" onClick={handleJokeIntervalDisplayClick} color="primary">Get jokes...</Button>
+            {jokeSectionContent}
         </div>
     );
 }
+
+
