@@ -1,5 +1,6 @@
 import {Checkbox, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText} from "@mui/material";
-import React from "react";
+import React, {useState} from "react";
+import type {JokeApiResponse} from "../interface/joke-api-response.interface.ts";
 
 function CommentIcon() {
     return null;
@@ -7,6 +8,8 @@ function CommentIcon() {
 
 export default function FavoritesScreen () {
     const [checked, setChecked] = React.useState([0]);
+    const [jokes, setJokes] = useState<JokeApiResponse[]>([]);
+
 
     const handleToggle = (value: number) => () => {
         const currentIndex = checked.indexOf(value);

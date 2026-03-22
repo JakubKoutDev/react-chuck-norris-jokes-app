@@ -12,10 +12,6 @@ export default function JokesScreen() {
     const [joke, setJoke] = useState<JokeApiResponse | null>(null)
     const [isJokeIntervalRunning, setIsJokeIntervalRunning] = useState(false);
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-    const [favorites, setFavorites] = useState<JokeApiResponse[]>(() => {
-        const stored = localStorage.getItem("favorites")
-        return stored ? JSON.parse(stored) : []
-    });
 
     useEffect(() => {
         if (!isJokeIntervalRunning) return;
@@ -38,17 +34,6 @@ export default function JokesScreen() {
         };
         void fetchAvatar();
     }, []);
-
-    useEffect(() => {
-        const stored = localStorage.getItem("favorites");
-        if (stored) {
-            setFavorites(JSON.parse(stored))
-        }
-    }, []);
-
-    useEffect(() => {
-        localStorage.setItem("favorites", JSON.stringify(favorites));
-    }, [favorites]);
 
     const { toggleFavorite, isFavorite } = useFavoritesContext();
 
@@ -99,7 +84,7 @@ export default function JokesScreen() {
                 <Card sx={{borderRadius: "16px 0 16px 0", padding: 2}}>
                     {jokeSectionContent}
                 </Card>
-                {joke && <IconButton onClick={() => toggleFavorite(joke as JokeApiResponse)}>
+                {joke && <IconButton onClick={() => joke && toggleFavorite(joke)}>
                     {joke && isFavorite(joke.id) ? <FavoriteIcon></FavoriteIcon> : <FavoriteBorderIcon></FavoriteBorderIcon>}
                 </IconButton>
                 }                <div

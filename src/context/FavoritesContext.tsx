@@ -1,12 +1,7 @@
-import type {JokeApiResponse} from "../interface/joke-api-response.interface.ts";
 import React, {createContext, type ReactNode, } from "react";
 import {useFavorites} from "../hooks/useFavorites.ts";
+import type {FavoritesContextType} from "../interface/favorites-context.type.ts";
 
-type FavoritesContextType = {
-    favorites: JokeApiResponse[];
-    toggleFavorite: (joke: JokeApiResponse) => void;
-    isFavorite: (id: string) => boolean;
-};
 
 export const FavoritesContext = createContext<FavoritesContextType | undefined>(undefined);
 
