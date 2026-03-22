@@ -6,8 +6,9 @@ import {getJoke} from "../api/get-random-joke.api.ts";
 import {Avatar, Box, Button, Card, IconButton} from "@mui/material";
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import FavoriteIcon from '@mui/icons-material/Favorite';
+import type {JokeScreenProps} from "../interface/joke-screen-props.type.ts";
 
-export default function JokesScreen() {
+export default function JokesScreen({toggleFavoriteJoke, isFavoriteJoke}: JokeScreenProps) {
     const [joke, setJoke] = useState<JokeApiResponse | null>(null)
     const [isJokeIntervalRunning, setIsJokeIntervalRunning] = useState(false);
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -77,17 +78,6 @@ export default function JokesScreen() {
         jokeSectionContent = <span>{joke.value}</span>;
     }
 
-    const toggleFavorite = (joke: JokeApiResponse) => {
-            const exists = favorites.find(j => j.id === joke.id);
-            if (exists) {
-                setFavorites(favorites.filter(j => j.id !== joke.id));
-            }else {
-                setFavorites([...favorites, joke]);
-            }
-    }
-
-    const isFavorite = favorites?.some(j => j.id === joke?.id);
-
     return (
         <Box sx={{
             display: "flex",
@@ -104,8 +94,8 @@ export default function JokesScreen() {
                 <Card sx={{borderRadius: "16px 0 16px 0", padding: 2}}>
                     {jokeSectionContent}
                 </Card>
-                <IconButton onClick={() => toggleFavorite(joke as JokeApiResponse)}>
-                    {isFavorite ? <FavoriteIcon></FavoriteIcon> : <FavoriteBorderIcon></FavoriteBorderIcon>}
+                <IconButton onClick={() => toggleFavoriteJoke(joke as JokeApiResponse)}>
+                    {joke && isFavoriteJoke(joke.id) ? <FavoriteIcon></FavoriteIcon> : <FavoriteBorderIcon></FavoriteBorderIcon>}
                 </IconButton>
                 <div
                     style={{

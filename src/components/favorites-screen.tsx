@@ -1,11 +1,13 @@
 import {Box, Checkbox, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText} from "@mui/material";
 import React from "react";
+import type {JokeApiResponse} from "../interface/joke-api-response.interface.ts";
+import type {FavoritesScreenProps} from "../interface/favorites-screen-props.type.ts";
 
 function CommentIcon() {
     return null;
 }
 
-export default function FavoritesScreen () {
+export default function FavoritesScreen ({favorites, toggleFavoriteJoke}: FavoritesScreenProps) {
     const [checked, setChecked] = React.useState([0]);
 
     const handleToggle = (value: number) => () => {
