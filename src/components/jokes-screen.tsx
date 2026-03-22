@@ -7,11 +7,12 @@ import {Avatar, Box, Button, Card, IconButton} from "@mui/material";
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import {useFavoritesContext} from "../hooks/use-favorites-context.ts";
-
+import { Snackbar, Alert } from "@mui/material";
 export default function JokesScreen() {
     const [joke, setJoke] = useState<JokeApiResponse | null>(null)
     const [isJokeIntervalRunning, setIsJokeIntervalRunning] = useState(false);
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
 
     useEffect(() => {
         if (!isJokeIntervalRunning) return;
@@ -60,6 +61,12 @@ export default function JokesScreen() {
         await fetchAndSetJoke()
     }
 
+    const toggleFavoriteHandler = () => {
+        if(!joke) return
+
+        toggleFavorite(joke, () => {setSnackbarOpen(true)})
+
+    }
     if (!isOnline) {
         jokeSectionContent = <span>No internet connection!</span>;
     } else if (!joke) {
@@ -84,7 +91,7 @@ export default function JokesScreen() {
                 <Card sx={{borderRadius: "16px 0 16px 0", padding: 2}}>
                     {jokeSectionContent}
                 </Card>
-                {joke && <IconButton onClick={() => joke && toggleFavorite(joke)}>
+                {joke && <IconButton onClick={toggleFavoriteHandler}>
                     {joke && isFavorite(joke.id) ? <FavoriteIcon></FavoriteIcon> : <FavoriteBorderIcon></FavoriteBorderIcon>}
                 </IconButton>
                 }                <div
@@ -111,7 +118,17 @@ export default function JokesScreen() {
                         onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"} variant="contained" onClick={handleJokeIntervalDisplayClick}
                         color={isJokeIntervalRunning ? "error" : "primary"}>{isJokeIntervalRunning ? "⏹ Stop Chuck Mode" : "▶️ Start Chuck Mode"}</Button>
             </Box>
+            <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={3000}
+                onClose={() => setSnackbarOpen(false)}
+            >
+                <Alert severity="info" onClose={() => setSnackbarOpen(false)}>
+                    Maximum reached. Oldest joke was replaced.
+                </Alert>
+            </Snackbar>
         </Box>
+
     );
 
 }

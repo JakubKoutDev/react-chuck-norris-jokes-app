@@ -23,9 +23,8 @@ export function useFavorites() {
         }
     }, [favorites]);
 
-    const toggleFavorite = (joke: JokeApiResponse) => {
+    const toggleFavorite = (joke: JokeApiResponse, onRemovedOldest?: () => void) => {
         const exists = favorites.some(j => j.id === joke.id);
-
         let removedOldest = false;
 
         if (!exists && favorites.length >= 10) {
@@ -37,16 +36,16 @@ export function useFavorites() {
                 return prev.filter(j => j.id !== joke.id);
             }
 
-            const updated = [...prev, joke];
-
+            let updated = [...prev, joke];
             if (updated.length > 10) {
                 updated.shift();
             }
-
             return updated;
         });
 
-        return { removedOldest };
+        if (removedOldest) {
+            onRemovedOldest?.();
+        }
     };
 
     // Syncs UI of the favorites list across browser tabs
