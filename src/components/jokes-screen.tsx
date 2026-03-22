@@ -6,13 +6,16 @@ import {getJoke} from "../api/get-random-joke.api.ts";
 import {Avatar, Box, Button, Card, IconButton} from "@mui/material";
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import FavoriteIcon from '@mui/icons-material/Favorite';
-import type {JokeScreenProps} from "../interface/joke-screen-props.type.ts";
+import {useFavoritesContext} from "../hooks/use-favorites-context.ts";
 
-export default function JokesScreen({toggleFavoriteJoke, isFavoriteJoke}: JokeScreenProps) {
+export default function JokesScreen() {
     const [joke, setJoke] = useState<JokeApiResponse | null>(null)
     const [isJokeIntervalRunning, setIsJokeIntervalRunning] = useState(false);
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-    const [favorites, setFavorites] = useState<JokeApiResponse[]>([]);
+    const [favorites, setFavorites] = useState<JokeApiResponse[]>(() => {
+        const stored = localStorage.getItem("favorites")
+        return stored ? JSON.parse(stored) : []
+    });
 
     useEffect(() => {
         if (!isJokeIntervalRunning) return;
@@ -46,6 +49,8 @@ export default function JokesScreen({toggleFavoriteJoke, isFavoriteJoke}: JokeSc
     useEffect(() => {
         localStorage.setItem("favorites", JSON.stringify(favorites));
     }, [favorites]);
+
+    const { toggleFavorite, isFavorite } = useFavoritesContext();
 
     const isOnline = useOnlineStatus()
 
@@ -94,10 +99,10 @@ export default function JokesScreen({toggleFavoriteJoke, isFavoriteJoke}: JokeSc
                 <Card sx={{borderRadius: "16px 0 16px 0", padding: 2}}>
                     {jokeSectionContent}
                 </Card>
-                <IconButton onClick={() => toggleFavoriteJoke(joke as JokeApiResponse)}>
-                    {joke && isFavoriteJoke(joke.id) ? <FavoriteIcon></FavoriteIcon> : <FavoriteBorderIcon></FavoriteBorderIcon>}
+                {joke && <IconButton onClick={() => toggleFavorite(joke as JokeApiResponse)}>
+                    {joke && isFavorite(joke.id) ? <FavoriteIcon></FavoriteIcon> : <FavoriteBorderIcon></FavoriteBorderIcon>}
                 </IconButton>
-                <div
+                }                <div
                     style={{
                         position: "absolute",
                         bottom: 0,
