@@ -1,55 +1,45 @@
-import {Box, Button, Dialog, DialogContent, DialogTitle, IconButton, List, ListItem, ListItemText, Typography} from "@mui/material";
-import React, {useState} from "react";
+import {Box, Button, Dialog, DialogContent, DialogTitle, List, Typography} from "@mui/material";
+import React, { useState} from "react";
 import {useFavoritesContext} from "../hooks/use-favorites-context.ts";
-import DeleteIcon from "@mui/icons-material/Delete";
+import FavoriteItem from "./FavoriteItem.tsx";
+import type {JokeApiResponse} from "../interface/joke-api-response.interface.ts";
 
 export default function FavoritesScreen() {
     const {favorites, toggleFavorite, clearFavorites} = useFavoritesContext();
-    const [openJoke, setOpenJoke] = useState<string | null>(null);
+    const [selectedJoke, setSelectedJoke] = useState<JokeApiResponse | null>(null);
+
+
+    const containerSx = {
+        width: "100%",
+        maxWidth: 600,
+        margin: "0 auto",
+    };
 
     return (
         <Box sx={{display: "flex", flexDirection: "column", alignItems: "center"}}>
-            <Box sx={{width: "100%", maxWidth: 600, margin: "0 auto", display: "flex", justifyContent: "flex-end", mb: 1}}>
+            <Box sx={[containerSx, {display: "flex", justifyContent: "flex-end", mb: 1}]}>
                 <Button variant="contained" size="small" color="error" onClick={clearFavorites}>
                     Clear All
                 </Button>
             </Box>
 
-            <List sx={{width: "100%", maxWidth: 600, margin: "0 auto"}}>
-                {favorites.map((joke) => (
-                    <ListItem
+            {favorites.length === 0 ? <Typography>No favorites yet.</Typography> : (
+                <List dense sx={containerSx}>
+                {favorites.map(joke => (
+                    <FavoriteItem
                         key={joke.id}
-                        secondaryAction={
-                            <IconButton edge="end" onClick={() => toggleFavorite(joke)}>
-                                <DeleteIcon/>
-                            </IconButton>
-                        }
-                        onClick={() => setOpenJoke(joke.value)}
-                        sx={{cursor: 'pointer'}}
-                    >
-                        <ListItemText
-                            primary={
-                                <Typography
-                                    sx={{
-                                        display: '-webkit-box',
-                                        WebkitLineClamp: 2,
-                                        WebkitBoxOrient: 'vertical',
-                                        overflow: 'hidden',
-                                    }}
-                                >
-                                    {joke.value}
-                                </Typography>
-                            }
-                        />
-                    </ListItem>
+                        joke={joke}
+                        onOpen={setSelectedJoke}
+                        onDelete={toggleFavorite}
+                    />
                 ))}
-            </List>
+            </List>)
+            }
 
-
-            <Dialog open={!!openJoke} onClose={() => setOpenJoke(null)}>
+            <Dialog open={!!selectedJoke} onClose={() => setSelectedJoke(null)}>
                 <DialogTitle>Full Joke</DialogTitle>
                 <DialogContent>
-                    <Typography>{openJoke}</Typography>
+                    <Typography>{selectedJoke?.value}</Typography>
                 </DialogContent>
             </Dialog>
         </Box>
