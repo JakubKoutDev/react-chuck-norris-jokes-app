@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useCallback, useEffect, useState} from "react";
 import type {JokeApiResponse} from "../interface/joke-api-response.interface.ts";
 import {apiGetAvatar} from "../api/get-avatar.api.ts";
 import {useOnlineStatus} from "../util/check-online-status.util.ts";
@@ -13,6 +13,11 @@ export default function JokesScreen() {
     const [isJokeIntervalRunning, setIsJokeIntervalRunning] = useState(false);
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
     const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const { toggleFavorite, isFavorite } = useFavoritesContext();
+    const toggleFavoriteHandler = useCallback(() => {
+        if (!joke) return;
+        toggleFavorite(joke, () => setSnackbarOpen(true));
+    }, [joke, toggleFavorite]);
 
     useEffect(() => {
         if (!isJokeIntervalRunning) return;
@@ -23,6 +28,26 @@ export default function JokesScreen() {
 
         return () => clearInterval(id);
     }, [isJokeIntervalRunning]);
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            const target = e.target as HTMLElement;
+            if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") return;
+
+            const key = e.key.toLowerCase();
+
+            if (key === 'j' && !isJokeIntervalRunning) {
+                void handleGetRandomJokeClick();
+            } else if (key === 'c') {
+                handleJokeIntervalDisplayClick();
+            } else if (key === 'f') {
+                toggleFavoriteHandler();
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [toggleFavoriteHandler, isJokeIntervalRunning]);
 
     useEffect(() => {
         const fetchAvatar = async () => {
@@ -36,7 +61,6 @@ export default function JokesScreen() {
         void fetchAvatar();
     }, []);
 
-    const { toggleFavorite, isFavorite } = useFavoritesContext();
 
     const isOnline = useOnlineStatus()
 
@@ -50,8 +74,6 @@ export default function JokesScreen() {
         try {
             const data: JokeApiResponse = await getJoke();
             setJoke(data);
-
-            console.log(data)
         } catch (e) {
             console.error(e);
         }
@@ -61,12 +83,7 @@ export default function JokesScreen() {
         await fetchAndSetJoke()
     }
 
-    const toggleFavoriteHandler = () => {
-        if(!joke) return
 
-        toggleFavorite(joke, () => {setSnackbarOpen(true)})
-
-    }
     if (!isOnline) {
         jokeSectionContent = <span>No internet connection!</span>;
     } else if (!joke) {
@@ -93,6 +110,8 @@ export default function JokesScreen() {
                 </Card>
                 {joke && <IconButton onClick={toggleFavoriteHandler}>
                     {joke && isFavorite(joke.id) ? <FavoriteIcon></FavoriteIcon> : <FavoriteBorderIcon></FavoriteBorderIcon>}
+                    <span style={{fontSize: '0.7rem', marginLeft: 2}}>(F)</span>
+
                 </IconButton>
                 }                <div
                     style={{
@@ -109,14 +128,16 @@ export default function JokesScreen() {
             </Box>
             <Box sx={{display: "flex", flexDirection: "row", gap: 8}}>
                 <Button style={{transition: "transform 0.2s"}}
+                        title="Press J to show a random joke"
                         onMouseEnter={e => e.currentTarget.style.transform = "scale(1.05)"}
                         onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"} disabled={isJokeIntervalRunning} variant="contained"
                         onClick={handleGetRandomJokeClick}
-                        color="primary">Show a joke...</Button>
+                        color="primary">Show a joke... (J)</Button>
                 <Button style={{transition: "transform 0.2s"}}
+                        title="Press C for Chuck Mode"
                         onMouseEnter={e => e.currentTarget.style.transform = "scale(1.05)"}
                         onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"} variant="contained" onClick={handleJokeIntervalDisplayClick}
-                        color={isJokeIntervalRunning ? "error" : "primary"}>{isJokeIntervalRunning ? "⏹ Stop Chuck Mode" : "▶️ Start Chuck Mode"}</Button>
+                        color={isJokeIntervalRunning ? "error" : "primary"}>{isJokeIntervalRunning ? "⏹ Stop Chuck Mode (C)" : "▶️ Start Chuck Mode (C)"}</Button>
             </Box>
             <Snackbar
                 open={snackbarOpen}
