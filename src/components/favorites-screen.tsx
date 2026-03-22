@@ -1,58 +1,49 @@
-import {Checkbox, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText} from "@mui/material";
+import {Dialog, DialogContent, DialogTitle, IconButton, List, ListItem, ListItemText, Typography} from "@mui/material";
 import React, {useState} from "react";
-import type {JokeApiResponse} from "../interface/joke-api-response.interface.ts";
+import {useFavoritesContext} from "../hooks/use-favorites-context.ts";
+import DeleteIcon from "@mui/icons-material/Delete";
 
-function CommentIcon() {
-    return null;
-}
-
-export default function FavoritesScreen () {
-    const [checked, setChecked] = React.useState([0]);
-    const [jokes, setJokes] = useState<JokeApiResponse[]>([]);
-
-
-    const handleToggle = (value: number) => () => {
-        const currentIndex = checked.indexOf(value);
-        const newChecked = [...checked];
-
-        if (currentIndex === -1) {
-            newChecked.push(value);
-        } else {
-            newChecked.splice(currentIndex, 1);
-        }
-
-        setChecked(newChecked);
-    };
+export default function FavoritesScreen() {
+    const {favorites, toggleFavorite} = useFavoritesContext();
+    const [openJoke, setOpenJoke] = useState<string | null>(null);
 
     return (
-        <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
-            {[0, 1, 2, 3].map((value) => {
-                const labelId = `checkbox-list-label-${value}`;
-
-                return (
+        <>
+            <List sx={{ width: "100%", maxWidth: 600, margin: "0 auto" }}>
+                {favorites.map((joke) => (
                     <ListItem
-                        key={value}
+                        key={joke.id}
                         secondaryAction={
-                            <IconButton edge="end" aria-label="comments">
-                                <CommentIcon />
+                            <IconButton edge="end" onClick={() => toggleFavorite(joke)}>
+                                <DeleteIcon />
                             </IconButton>
                         }
-                        disablePadding
+                        onClick={() => setOpenJoke(joke.value)}
+                        sx={{ cursor: 'pointer' }}
                     >
-                        <ListItemButton role={undefined} onClick={handleToggle(value)} dense>
-                            <ListItemIcon>
-                                <Checkbox
-                                    edge="start"
-                                    checked={checked.includes(value)}
-                                    tabIndex={-1}
-                                    disableRipple
-                                    inputProps={{ 'aria-labelledby': labelId }}
-                                />
-                            </ListItemIcon>
-                            <ListItemText id={labelId} primary={`Line item ${value + 1}`} />
-                        </ListItemButton>
+                        <ListItemText
+                            primary={
+                                <Typography
+                                    sx={{
+                                        display: '-webkit-box',
+                                        WebkitLineClamp: 2,
+                                        WebkitBoxOrient: 'vertical',
+                                        overflow: 'hidden',
+                                    }}
+                                >
+                                    {joke.value}
+                                </Typography>
+                            }
+                        />
                     </ListItem>
-                );
-            })}
-        </List>
+                ))}
+            </List>
+
+            <Dialog open={!!openJoke} onClose={() => setOpenJoke(null)}>
+                <DialogTitle>Full Joke</DialogTitle>
+                <DialogContent>
+                    <Typography>{openJoke}</Typography>
+                </DialogContent>
+            </Dialog>
+        </>
     );}
