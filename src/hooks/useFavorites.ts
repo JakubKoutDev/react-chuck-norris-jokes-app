@@ -68,9 +68,13 @@ export function useFavorites() {
         };
     }, []);
 
+    const clearFavorites = () => {
+        setFavorites([]);
+    };
+
     const isFavorite = (id: string) => {
         return favorites.some(j => j.id === id);
     };
 
-    return { favorites, toggleFavorite, isFavorite };
+    return { favorites, toggleFavorite, isFavorite, clearFavorites };
 }
